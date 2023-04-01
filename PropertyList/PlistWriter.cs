@@ -57,6 +57,9 @@ public class PlistWriter
             string s => new XElement(PlistElements.String, s),
             bool s when s => new XElement(PlistElements.True),
             bool s when !s => new XElement(PlistElements.False),
+            byte or sbyte or short or ushort or int or uint or long or ulong => new XElement(PlistElements.Integer, node),
+            float or double or decimal => new XElement(PlistElements.Real, node),
+            DateTime => throw new NotImplementedException(),
             null => throw new ArgumentNullException(nameof(node), "null is not supported"),
             _ => throw new NotSupportedException($"Unknown node type {node.GetType()}")
         };
