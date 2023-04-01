@@ -2,67 +2,78 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Xml;
+using System.Xml.Linq;
 
-namespace PropertyList
+namespace PropertyList;
+
+public class PlistReader
 {
-    public class PlistReader
+    public Dictionary<string, object> Read(Stream stream)
     {
-        public object Read(Stream stream)
-        {
-            return Read(new StreamReader(stream));
-        }
+        return Read(XDocument.Load(stream));
+    }
 
-        public object Read(TextReader reader)
+    public Dictionary<string, object> Read(TextReader reader)
+    {
+        return Read(XDocument.Load(reader));
+    }
+
+    public Dictionary<string, object> Read(XmlReader reader)
+    {
+        return Read(XDocument.Load(reader));
+    }
+
+    public Dictionary<string, object> Read(XDocument xDocument)
+    {
+        var plist = xDocument.Root;
+        if (plist?.Name.LocalName != PlistElements.Plist)
+            throw new InvalidDataException("Expected a plist");
+        return (Dictionary<string, object>)ReadNode(plist.Elements().Single());
+    }
+
+    private object ReadNode(XElement node)
+    {
+        var name = node.Name.LocalName;
+        return name switch
         {
-            using var xmlReader = XmlReader.Create(reader, new XmlReaderSettings { DtdProcessing = DtdProcessing.Parse, IgnoreWhitespace = true, IgnoreComments = true });
-            while (xmlReader.Read())
+            PlistElements.Dict => ReadDict(node),
+            PlistElements.Array => ReadArray(node),
+            PlistElements.String => node.Value,
+            PlistElements.Real => decimal.Parse(node.Value, CultureInfo.InvariantCulture),
+            PlistElements.Integer => long.Parse(node.Value, CultureInfo.InvariantCulture),
+            PlistElements.Date => throw new NotImplementedException(),
+            PlistElements.True => true,
+            PlistElements.False => false,
+            _ => throw new InvalidDataException("Unknown {name} element")
+        };
+    }
+
+    private object ReadArray(XElement arrayElement)
+    {
+        return arrayElement.Elements().Select(ReadNode).ToList();
+    }
+
+    private object ReadDict(XElement dictElement)
+    {
+        return GetDictKeyValues(dictElement).ToDictionary(kv => kv.Key, kv => kv.Value);
+    }
+
+    private IEnumerable<(string Key, object Value)> GetDictKeyValues(XElement dictElement)
+    {
+        string? key = null;
+        foreach (var element in dictElement.Elements())
+            if (key is null)
             {
-                if (xmlReader.NodeType == XmlNodeType.Element)
-                {
-                    if (xmlReader.Name == "plist")
-                        continue;
-                    return ReadNode(xmlReader);
-                }
+                if (element.Name.LocalName != PlistElements.Key)
+                    throw new InvalidDataException($"Expected <{PlistElements.Key}> in dictionary");
+                key = element.Value;
             }
-
-            throw new InvalidDataException("The file does not contain a node");
-        }
-
-        public object ReadNode(XmlReader xmlReader)
-        {
-            var name = xmlReader.LocalName;
-            switch (name)
+            else
             {
-                case "dict":
-                    return ReadDict(xmlReader);
-                case "array":
-                    return ReadArray(xmlReader);
-                case "string":
-                    return xmlReader.Value;
-                case "real":
-                    return decimal.Parse(xmlReader.Value, CultureInfo.InvariantCulture);
-                case "integer":
-                    return long.Parse(xmlReader.Value, CultureInfo.InvariantCulture);
-                case "date":
-                    throw new NotImplementedException();
-                case "true":
-                    return true;
-                case "false":
-                    return false;
-                default:
-                    throw new InvalidDataException("Unknown {name} element");
+                yield return (key, ReadNode(element));
+                key = null;
             }
-        }
-
-        private object ReadArray(XmlReader xmlReader)
-        {
-            throw new NotImplementedException();
-        }
-
-        private object ReadDict(XmlReader xmlReader)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

@@ -1,3 +1,6 @@
+using System.Collections;
+using System.Diagnostics.Metrics;
+using System.Text;
 using NUnit.Framework;
 using PropertyList;
 
@@ -6,10 +9,7 @@ namespace PropertyListTest;
 [TestFixture]
 public class PlistTest
 {
-    [Test]
-    public void ReadSimpleTest()
-    {
-        var xml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+    private const string Plist1 = @"<?xml version=""1.0"" encoding=""UTF-8""?>
 <!DOCTYPE plist PUBLIC ""-//Apple//DTD PLIST 1.0//EN"" ""http://www.apple.com/DTDs/PropertyList-1.0.dtd"">
 <plist version=""1.0"">
 <dict>
@@ -33,7 +33,28 @@ public class PlistTest
 </plist>
 ";
 
+    [Test]
+    public void ReadSimpleTest()
+    {
         var reader = new PlistReader();
-        var plist = reader.Read(new StringReader(xml));
+        var plist = reader.Read(new StringReader(Plist1));
+        Assert.That(plist["Label"], Is.EqualTo("com.apple.installer.osmessagetracing"));
+        var args = (IList)plist["ProgramArguments"];
+        Assert.That(args.Count, Is.EqualTo(1));
+        Assert.That(args[0], Is.EqualTo("/System/Library/PrivateFrameworks/OSInstaller.framework/Resources/OSMessageTracer"));
+    }
+
+    [Test]
+    public void WriteSimpleTest()
+    {
+        var plist = new Dictionary<string, object>
+        {
+            {"Label", "here"},
+            {"LaunchOnlyOnce", true},
+        };
+        using var writer = new MemoryStream();
+        var plistWriter = new PlistWriter();
+        plistWriter.Write(plist, writer);
+        var s = Encoding.ASCII.GetString(writer.ToArray());
     }
 }
