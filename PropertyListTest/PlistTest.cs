@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Diagnostics.Metrics;
 using System.Text;
+using System.Xml;
+using System.Xml.Linq;
 using NUnit.Framework;
 using PropertyList;
 
@@ -56,5 +58,8 @@ public class PlistTest
         var plistWriter = new PlistWriter();
         plistWriter.Write(plist, writer);
         var s = Encoding.ASCII.GetString(writer.ToArray());
+        var xDoc = XDocument.Load(new StringReader(s));
+        var p = xDoc.Element("plist")?.Element("dict")?.Element("key");
+        Assert.That(p?.Value, Is.EqualTo("Label"));
     }
 }
