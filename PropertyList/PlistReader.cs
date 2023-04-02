@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
+using Rfc3339;
 
 namespace PropertyList;
 
@@ -43,11 +44,18 @@ public class PlistReader
             PlistElements.String => node.Value,
             PlistElements.Real => decimal.Parse(node.Value, CultureInfo.InvariantCulture),
             PlistElements.Integer => long.Parse(node.Value, CultureInfo.InvariantCulture),
-            PlistElements.Date => throw new NotImplementedException(),
+            PlistElements.Date => ReadDateTime(node),
             PlistElements.True => true,
             PlistElements.False => false,
             _ => throw new InvalidDataException("Unknown {name} element")
         };
+    }
+
+    private object ReadDateTime(XElement node)
+    {
+        if (!Rfc3339Parser.TryParse(node.Value, out Rfc3339DateTime dateTime))
+            throw new InvalidDataException($"Can’t pars date '{node.Value}'");
+        return dateTime.DateTimeOffset;
     }
 
     private object ReadArray(XElement arrayElement)

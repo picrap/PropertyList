@@ -1,22 +1,36 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageTags>plist</PackageTags>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <IncludeSymbols>True</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	  <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+	  <Title>PropertyList</Title>
+	  <Description>A macOS plist formatter/parser</Description>
+	  <PackageProjectUrl>https://github.com/picrap/PropertyList</PackageProjectUrl>
+	  <PackageIcon>PropertyList.png</PackageIcon>
+	  <Version>1.0</Version>
+	  <PackageReadmeFile>README.md</PackageReadmeFile>
+	  <RepositoryUrl>https://github.com/picrap/PropertyList.git</RepositoryUrl>
+	  <PackageTags>plist;PropertyList;formatter;parser</PackageTags>
+	  <PackageLicenseExpression>MIT</PackageLicenseExpression>
+	  <IncludeSymbols>True</IncludeSymbols>
+	  <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\README.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
+    <PackageReference Include="Rfc3339" Version="1.0.0" />
   </ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\Icon\PropertyList.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
 
 </Project>
