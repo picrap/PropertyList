@@ -54,7 +54,8 @@ public class PlistWriter
         {
             IDictionary<string, object> dict => WriteDict(dict),
             IReadOnlyDictionary<string, object> dict => WriteDict(dict),
-            IList dict => WriteArray(dict),
+            ICollection array => WriteArray(array),
+            IEnumerable<object> array => WriteArray(array),
             string s => new XElement(PlistElements.String, s),
             true => new XElement(PlistElements.True),
             false => new XElement(PlistElements.False),
@@ -67,7 +68,7 @@ public class PlistWriter
         };
     }
 
-    private XElement WriteArray(IList array)
+    private XElement WriteArray(IEnumerable array)
     {
         return new XElement(PlistElements.Array, array.Cast<object>().Select(WriteNode));
     }

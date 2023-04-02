@@ -15,7 +15,7 @@ The library handles the following entities:
 | plist type | write | read |
 |--|--|--|
 | `dict` | `IDictionary<string,object>`, `IReadOnlyDictionary<string,object>` | `Dictionary<string,object>` (where `object`s are any other type) |
-| `array` | `IList` | `List<object>` (where `object`s are any other type) |
+| `array` | `ICollection`, `IEnumerable<object>` | `List<object>` (where `object`s are any other type) |
 | `string` | `string` | `string` |
 | `real` | `float`, `double`, `decimal` | `decimal` |
 | `integer` | `byte`, `sbyte`, `int`, `uint`, `long`, `ulong`  | `long` |
