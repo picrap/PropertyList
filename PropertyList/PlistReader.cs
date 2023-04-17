@@ -54,7 +54,7 @@ public class PlistReader
     private object ReadDateTime(XElement node)
     {
         if (!Rfc3339Parser.TryParse(node.Value, out Rfc3339DateTime dateTime))
-            throw new InvalidDataException($"Can’t pars date '{node.Value}'");
+            throw new InvalidDataException($"Can’t parse date '{node.Value}'");
         return dateTime.DateTimeOffset;
     }
 
