@@ -34,7 +34,7 @@ public class PlistReader
         return (Dictionary<string, object>)ReadNode(plist.Elements().Single());
     }
 
-    private object ReadNode(XElement node)
+    private static object ReadNode(XElement node)
     {
         var name = node.Name.LocalName;
         return name switch
@@ -51,24 +51,24 @@ public class PlistReader
         };
     }
 
-    private object ReadDateTime(XElement node)
+    private static DateTimeOffset ReadDateTime(XElement node)
     {
         if (!Rfc3339Parser.TryParse(node.Value, out Rfc3339DateTime dateTime))
             throw new InvalidDataException($"Can’t parse date '{node.Value}'");
         return dateTime.DateTimeOffset;
     }
 
-    private object ReadArray(XElement arrayElement)
+    private static List<object> ReadArray(XElement arrayElement)
     {
         return arrayElement.Elements().Select(ReadNode).ToList();
     }
 
-    private object ReadDict(XElement dictElement)
+    private static IDictionary<string, object> ReadDict(XElement dictElement)
     {
         return GetDictKeyValues(dictElement).ToDictionary(kv => kv.Key, kv => kv.Value);
     }
 
-    private IEnumerable<(string Key, object Value)> GetDictKeyValues(XElement dictElement)
+    private static IEnumerable<(string Key, object Value)> GetDictKeyValues(XElement dictElement)
     {
         string? key = null;
         foreach (var element in dictElement.Elements())
