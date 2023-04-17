@@ -9,79 +9,36 @@ using Rfc3339;
 
 namespace PropertyList;
 
-public class PlistReader
+public partial class PlistReader
 {
+    public PlistFormat GetFormat(Stream stream, bool seekToBegin = true)
+    {
+        var header = new byte[8];
+        stream.ReadAll(header);
+        if (seekToBegin)
+            stream.Seek(-header.Length, SeekOrigin.Current);
+        // interesting stuff here https://stackoverflow.com/a/4522251/67004
+        if (StartsWith(header, "bplist"))
+            return PlistFormat.Binary;
+        if (StartsWith(header, "<?xml"))
+            return PlistFormat.Xml;
+        return PlistFormat.Unknown;
+    }
+
+    private static bool StartsWith(byte[] header, string chars) => StartsWith(header, chars.Length, chars.Select(c => (byte)c));
+    private static bool StartsWith(byte[] header, params char[] chars) => StartsWith(header, chars.Length, chars.Select(c => (byte)c));
+    private static bool StartsWith(byte[] header, params byte[] chars) => StartsWith(header, chars.Length, chars);
+    private static bool StartsWith(byte[] header, int length, IEnumerable<byte> chars) => header.Take(length).SequenceEqual(chars);
+
     public Dictionary<string, object> Read(Stream stream)
     {
-        return Read(XDocument.Load(stream));
-    }
-
-    public Dictionary<string, object> Read(TextReader reader)
-    {
-        return Read(XDocument.Load(reader));
-    }
-
-    public Dictionary<string, object> Read(XmlReader reader)
-    {
-        return Read(XDocument.Load(reader));
-    }
-
-    public Dictionary<string, object> Read(XDocument xDocument)
-    {
-        var plist = xDocument.Root;
-        if (plist?.Name.LocalName != PlistElements.Plist)
-            throw new InvalidDataException("Expected a plist");
-        return (Dictionary<string, object>)ReadNode(plist.Elements().Single());
-    }
-
-    private static object ReadNode(XElement node)
-    {
-        var name = node.Name.LocalName;
-        return name switch
+        var seekableStream = stream.ToSeekableStream();
+        return GetFormat(seekableStream) switch
         {
-            PlistElements.Dict => ReadDict(node),
-            PlistElements.Array => ReadArray(node),
-            PlistElements.String => node.Value,
-            PlistElements.Real => decimal.Parse(node.Value, CultureInfo.InvariantCulture),
-            PlistElements.Integer => long.Parse(node.Value, CultureInfo.InvariantCulture),
-            PlistElements.Date => ReadDateTime(node),
-            PlistElements.True => true,
-            PlistElements.False => false,
-            _ => throw new InvalidDataException("Unknown {name} element")
+            PlistFormat.Unknown => throw new NotSupportedException("Unknown/unhandled plist format"),
+            PlistFormat.Xml => ReadXml(seekableStream),
+            PlistFormat.Binary => ReadBinary(seekableStream),
+            _ => throw new ArgumentOutOfRangeException(nameof(stream), "The developer missed something here")
         };
-    }
-
-    private static DateTimeOffset ReadDateTime(XElement node)
-    {
-        if (!Rfc3339Parser.TryParse(node.Value, out Rfc3339DateTime dateTime))
-            throw new InvalidDataException($"Can’t parse date '{node.Value}'");
-        return dateTime.DateTimeOffset;
-    }
-
-    private static List<object> ReadArray(XElement arrayElement)
-    {
-        return arrayElement.Elements().Select(ReadNode).ToList();
-    }
-
-    private static IDictionary<string, object> ReadDict(XElement dictElement)
-    {
-        return GetDictKeyValues(dictElement).ToDictionary(kv => kv.Key, kv => kv.Value);
-    }
-
-    private static IEnumerable<(string Key, object Value)> GetDictKeyValues(XElement dictElement)
-    {
-        string? key = null;
-        foreach (var element in dictElement.Elements())
-            if (key is null)
-            {
-                if (element.Name.LocalName != PlistElements.Key)
-                    throw new InvalidDataException($"Expected <{PlistElements.Key}> in dictionary");
-                key = element.Value;
-            }
-            else
-            {
-                yield return (key, ReadNode(element));
-                key = null;
-            }
     }
 }

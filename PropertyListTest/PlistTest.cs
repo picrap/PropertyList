@@ -38,8 +38,8 @@ public class PlistTest
     [Test]
     public void ReadSimpleTest()
     {
-        var reader = new PlistReader();
-        var plist = reader.Read(new StringReader(Plist1));
+        var plistReader = new PlistReader();
+        var plist = plistReader.ReadXml(new StringReader(Plist1));
         Assert.That(plist["Label"], Is.EqualTo("com.apple.installer.osmessagetracing"));
         var args = (IList)plist["ProgramArguments"];
         Assert.That(args.Count, Is.EqualTo(1));
@@ -61,5 +61,27 @@ public class PlistTest
         var xDoc = XDocument.Load(new StringReader(s));
         var p = xDoc.Element("plist")?.Element("dict")?.Element("key");
         Assert.That(p?.Value, Is.EqualTo("Label"));
+    }
+
+    [Test]
+    public void ReadSimpleBinaryTest()
+    {
+        var plistReader = new PlistReader();
+        using var plistStream = GetType().Assembly.GetManifestResourceStream("PropertyListTest.Plists.com.microsoft.teams.TeamsUpdaterDaemon.plist");
+        var plist = plistReader.Read(plistStream);
+        Assert.That(plist["Label"], Is.EqualTo("com.microsoft.teams.TeamsUpdaterDaemon"));
+        var machServices = (IDictionary<string, object>)plist["MachServices"];
+        Assert.That(machServices["com.microsoft.teams.TeamsUpdaterDaemon"], Is.EqualTo(true));
+    }
+
+    [Test]
+    public void ReadComplexBinaryTest()
+    {
+        var plistReader = new PlistReader();
+        using var plistStream = GetType().Assembly.GetManifestResourceStream("PropertyListTest.Plists.com.microsoft.OneDriveStandaloneUpdaterDaemon.plist");
+        var plist = plistReader.Read(plistStream);
+        Assert.That(plist["Label"], Is.EqualTo("com.microsoft.OneDriveStandaloneUpdaterDaemon"));
+        var programArguments = (IList<object>)plist["ProgramArguments"];
+        Assert.That(programArguments.Count, Is.EqualTo(0));
     }
 }

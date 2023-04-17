@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.microsoft.OneDriveStandaloneUpdaterDaemon</string>
+	<key>MachServices</key>
+	<dict>
+		<key>com.microsoft.OneDriveStandaloneUpdaterDaemon</key>
+		<true/>
+	</dict>
+	<key>Program</key>
+	<string>/Applications/OneDrive.app/Contents/StandaloneUpdaterDaemon.xpc/Contents/MacOS/StandaloneUpdaterDaemon</string>
+	<key>ProgramArguments</key>
+	<array/>
+	<key>StandardErrorPath</key>
+	<string>/Library/Logs/Microsoft/OneDrive/OneDriveStandaloneUpdaterDaemon.log</string>
+	<key>StandardOutPath</key>
+	<string>/Library/Logs/Microsoft/OneDrive/OneDriveStandaloneUpdaterDaemon.log</string>
+</dict>
+</plist>
