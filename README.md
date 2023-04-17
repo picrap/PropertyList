@@ -24,6 +24,8 @@ The library handles the following entities:
 
 ### Reading
 
+The library currently reads xml and binary plists.
+
 ```csharp
 using var reader = File.Open("/tmp/my.plist");
 var plistReader = new PlistReader();
@@ -33,6 +35,8 @@ var programArguments = (IList)plist["ProgramArguments"];
 ```
 
 ### Writing
+
+Only xml writing is supported
 
 ```csharp
 var plist = new Dictionary<string, object>
