@@ -10,7 +10,7 @@
 	  <Description>A macOS plist formatter/parser</Description>
 	  <PackageProjectUrl>https://github.com/picrap/PropertyList</PackageProjectUrl>
 	  <PackageIcon>PropertyList.png</PackageIcon>
-	  <Version>1.0.1</Version>
+	  <Version>1.1</Version>
 	  <PackageReadmeFile>README.md</PackageReadmeFile>
 	  <RepositoryUrl>https://github.com/picrap/PropertyList.git</RepositoryUrl>
 	  <PackageTags>plist;PropertyList;formatter;parser</PackageTags>
